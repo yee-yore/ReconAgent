@@ -1,0 +1,599 @@
+# GitHub Dorks Collection - 500+ patterns for credential discovery
+# Based on GitDorker alldorksv3 + custom additions
+# Categories: Cloud, API Keys, Database, Private Keys, Config Files, Backups, Development
+
+# ============= CLOUD PROVIDER CREDENTIALS =============
+# AWS
+aws_access_key_id
+aws_secret_access_key
+aws_access
+aws_secret
+aws_key
+aws_token
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWSSecretKey
+amazonaws
+s3_access_key
+s3_access_key_id
+s3_key
+s3_key_app_logs
+s3_key_assets
+s3_secret_key
+s3_bucket
+aws_bucket
+bucket_password
+bucketeer_aws_access_key_id
+bucketeer_aws_secret_access_key
+cache_s3_secret_key
+cloud_watch_aws_access_key
+sandbox_aws_access_key_id
+sandbox_aws_secret_access_key
+dynamoaccesskeyid
+dynamosecretaccesskey
+sqsaccesskey
+rds.amazonaws.com password
+eureka.awssecretkey
+
+# Azure
+azure_storage_account
+azure_storage_key
+azure_batch_account
+azure_batch_key
+azure_subscription_id
+azure_tenant_id
+azure_client_id
+azure_client_secret
+
+# Google Cloud
+google_private_key
+google_secret
+google_server_key
+api.googlemaps AIza
+
+# IBM Cloud
+bluemix_api_key
+bluemix_pass
+
+# Alibaba Cloud
+alicloud_access_key
+
+# DigitalOcean
+digitalocean_ssh_key_body
+digitalocean_ssh_key_ids
+
+# ============= API KEYS AND TOKENS =============
+api_key
+api_key_secret
+api_key_sid
+api_secret
+apikey
+apiSecret
+apidocs
+access_key
+access_token
+auth_token
+authorizationToken
+authsecret
+oauth_token
+x-api-key
+
+# Service-specific API Keys
+algolia_admin_key
+algolia_api_key
+bintray_apikey
+bintray_key
+bintraykey
+codecov_token
+datadog_api_key
+datadog_app_key
+DATADOG_API_KEY language:shell
+firebase_key
+flickr_api_key
+fossa_api_key
+gatsby_wordpress_base_url
+gatsby_wordpress_client_id
+gatsby_wordpress_user
+gh_api_key
+gh_token
+ghost_api_key
+github_api_key
+github_deploy_hb_doc_pass
+github_id
+github_key
+github_password
+github_token
+gitlab_token
+google_maps_api_key
+heroku_oauth
+heroku_oauth_secret
+heroku_oauth_token
+heroku_secret
+heroku_secret_token
+HEROKU_API_KEY language:shell
+HEROKU_API_KEY language:json
+JEKYLL_GITHUB_TOKEN
+mailchimp_api_key
+mailchimp_key
+mailgun_apikey
+mailgun_key
+mailgun_password
+mailgun_priv_key
+mailgun_secret_api_key
+mandrill_api_key
+mapbox api key
+mg_api_key
+mg_public_api_key
+mh_apikey
+netlify_api_key
+nexus_password
+npm_api_key
+npm_password
+npm_secret_key
+nuget_api_key
+nuget_apikey
+nuget_key
+okta_key
+omise_key
+onesignal_api_key
+onesignal_user_auth_key
+openwhisk_key
+pagerduty_apikey
+parse_js_key
+paypal_secret
+paypal_token
+plotly_apikey
+pusher_app_id
+sendgrid_api_key
+sendgrid_key
+sendgrid_password
+ses_access_key
+ses_secret_key
+shodan_api_key language:python
+shodan_api_key language:shell
+shodan_api_key language:json
+shodan_api_key language:ruby
+slack_api
+slack_channel
+slack_key
+slack_outgoing_token
+slack_signing_secret
+slack_token
+slack_webhook
+"https://hooks.slack.com/services/"
+slash_developer_space_key
+socrata_password
+sonar_organization_key
+sonar_project_key
+soundcloud_password
+square_access_token
+square_token
+squareSecret
+stripe_key
+stripe_secret
+stripToken
+swagger_key
+tesco_api_key
+twilio_account_sid
+twilio_accountsid
+twilio_api_key
+twilio_api_secret
+twilio_secret
+twilio_secret_token
+TWILIO_SID NOT env
+twilio_token
+twilio_account_id
+twilio_account_secret
+twilio_acount_sid NOT env
+twilio_api
+twilio_api_auth
+twilio_api_sid
+twilio_api_token
+twilioapiauth
+twiliosecret
+twitter_secret
+twitterKey
+zen_key
+zen_tkn
+zen_token
+zendesk_api_token
+zendesk_key
+zendesk_token
+zendesk_url
+zendesk_username
+
+# ============= DATABASE CREDENTIALS =============
+db_password
+db_server
+db_username
+dbpasswd
+dbpassword
+dbuser
+database_password
+database_schema_test
+mysql password
+mysql_root_password
+postgres_env_postgres_password
+postgresql_pass
+redis_password
+mongodb password
+.mlab.com password
+extension:json mongolab.com
+extension:yaml mongolab.com
+conn.login
+connectionstring
+elastica_host
+elastica_port
+elasticsearch_password
+extension:yaml cloud.redislabs.com
+extension:json cloud.redislabs.com
+
+# ============= PRIVATE KEYS AND CERTIFICATES =============
+extension:pem
+extension:pem private
+extension:ppk
+extension:ppk private
+filename:id_rsa
+filename:id_dsa
+filename:id_rsa or filename:id_dsa
+private_key
+private_signing_password
+certificate_password
+ssl_key
+ssh_key
+ssh2_auth_password
+sshpass
+filename:github-recovery-codes.txt
+filename:gitlab-recovery-codes.txt
+filename:discord_backup_codes.txt
+
+# ============= CONFIGURATION FILES =============
+# General Config
+filename:config
+filename:configuration.php JConfig password
+filename:config.php dbpasswd
+filename:config.php pass
+filename:config irc_pass
+filename:settings.py SECRET_KEY
+filename:constants
+filename:database
+filename:credentials
+filename:environment
+filename:express.conf path:.openshift
+filename:prod.exs NOT prod.secret.exs
+filename:prod.secret.exs
+filename:deploy.rake
+filename:deployment-config.json
+filename:master.key path:config
+filename:secrets.yml password
+
+# Environment Files
+extension:env
+filename:.env
+filename:.env DB_USERNAME NOT homestead
+filename:.env MAIL_HOST=smtp.gmail.com
+app_debug
+app_id
+app_key
+app_log_level
+app_secret
+cache_driver
+queue_driver
+
+# Docker and Container Configs
+filename:.dockercfg auth
+filename:docker-compose.yml
+docker_hub_password
+docker_key
+docker_pass
+docker_passwd
+docker_password
+dockerhub_password
+dockerhubpassword
+
+# Web Server Configs
+filename:.htaccess
+filename:.htpasswd
+filename:wp-config.php
+filename:WebServers.xml
+filename:server.cfg rcon password
+filename:ventrilo_srv.ini
+filename:CCCam.cfg
+
+# Development Tool Configs
+filename:.bashrc password
+filename:.bashrc mailchimp
+filename:.bash_profile aws
+filename:.bash_history
+filename:.cshrc
+filename:.history
+filename:.sh_history
+filename:.zshrc
+filename:.netrc password
+filename:_netrc password
+filename:.pgpass
+filename:proftpdpasswd
+filename:.git-credentials
+filename:.tugboat NOT _tugboat
+filename:hub oauth_token
+PT_TOKEN language:bash
+HOMEBREW_GITHUB_API_TOKEN language:shell
+
+# IDE and Editor Configs
+filename:idea14.key
+filename:sftp-config.json
+filename:.ftpconfig
+filename:.remote-sync.json
+filename:sftp.json path:.vscode
+filename:robomongo.json
+filename:filezilla.xml Pass
+filename:recentservers.xml Pass
+filename:dbeaver-data-sources.xml
+filename:.esmtprc password
+
+# Cloud Storage Configs
+filename:.s3cfg
+filename:config.json auths
+
+# Messaging and Communication
+msg nickserv identify filename:config
+irc_pass
+xoxp OR xoxb
+xoxp
+xoxb
+
+# ============= FILE EXTENSIONS WITH SECRETS =============
+extension:sql
+extension:sql mysql dump
+extension:sql mysql dump password
+extension:json api.forecast.io
+extension:json googleusercontent client_secret
+extension:avastlic "support.avast.com"
+extension:ica
+WFClient Password extension:ica
+[WFClient] Password= extension:ica
+extension:bat
+extension:cfg
+extension:ini
+extension:properties
+extension:sh
+extension:sls
+extension:exs
+extension:yaml
+extension:zsh
+
+# ============= AUTHENTICATION AND SESSION =============
+admin_pass
+admin_user
+alias_pass
+password
+passwd
+pass
+pwd
+secret
+credentials
+login
+token
+session
+username
+"api_hash" "api_id"
+
+# ============= APPLICATION SECRETS =============
+app_secret
+appkey
+appkeysecret
+application_key
+appsecret
+appspot
+consumer_key
+consumer_secret
+encryption_key
+encryption_password
+fabricApiSecret
+facebook_secret
+fb_secret
+master_key
+secret_access_key
+secret_bearer
+secret_key
+secret_key_base
+secret_token
+secret.password
+secretaccesskey
+secretkey
+secrets
+
+# ============= BUILD AND DEPLOYMENT =============
+built_branch_deploy_key
+ci_deploy_password
+deploy_password
+org_gradle_project_sonatype_nexus_password
+org_project_gradle_sonatype_nexus_password
+ossrh_jira_password
+ossrh_pass
+ossrh_password
+publish_key
+sonatype_password
+sonatype_token_password
+
+# ============= PAYMENT GATEWAYS =============
+braintree_auth
+braintree_key
+paypal_secret
+paypal_token
+stripe
+stripe_key
+stripe_secret
+square_access_token
+square_token
+
+# ============= MONITORING AND LOGGING =============
+bugsnag_api_key
+rollbar_key
+sentry_auth
+sentry_key
+newrelic_key
+raygun_apikey
+honeybadger_key
+airbrake_api_key
+airbrake_project_key
+loggly_key
+
+# ============= MESSAGING SERVICES =============
+fcm_key
+firebase_key
+gcm_key
+pusher_app_id
+pusher_app_key
+pusher_app_secret
+mqtt_password
+rabbitmq_password
+
+# ============= SECURITY TOKENS =============
+jwt_secret
+jwt_token
+jwt_key
+jwt_secret_key
+jwt_client_secret_key
+jwt_lookup_secert_key
+jwt_password
+jwt_user
+jwt_web_secert_key
+jwt_xmpp_secert_key
+client_secret
+client_zpk_secret_key
+response_auth_jwt_secret
+
+# ============= CLOUD FUNCTIONS =============
+firebase_secret
+firebase_token
+firebaseSecret
+lambda_key
+function_key
+azure_function_key
+
+# ============= MISC CREDENTIALS =============
+ftp_password
+ftp_username
+ftp_user
+ftp_host
+ldap_password
+ldap_username
+smtp_password
+mail_password
+mail_port
+email_password
+gmail_password
+gmail_username
+outlook_password
+yahoo_password
+prod_password
+stg_password
+staging_password
+production_password
+sandbox_password
+test_password
+demo_password
+root_password
+su_password
+sudo_password
+ansible_vault_password
+vault_password
+keystore_password
+truststore_password
+jks_password
+pfx_password
+p12_password
+
+# ============= DEVELOPMENT ENVIRONMENTS =============
+dev
+development
+stg
+staging
+prod
+production
+test
+testing
+qa
+uat
+sandbox
+demo
+local
+localhost
+
+# ============= SENSITIVE FILE PATTERNS =============
+filename:logins.json
+filename:shadow path:etc
+filename:passwd path:etc
+filename:sshd_config
+filename:dhcpd.conf
+filename:connections.xml
+filename:express.conf
+filename:jupyter_notebook_config.json
+jsforce extension:js conn.login
+SF_USERNAME salesforce
+path:sites databases password
+
+# ============= CRYPTO AND BLOCKCHAIN =============
+bitcoin_private_key
+ethereum_private_key
+crypto_key
+wallet_key
+mnemonic
+seed_phrase
+private_key
+
+# ============= MOBILE APP SECRETS =============
+android_key
+ios_key
+apns_key
+apns_cert
+gcm_sender_id
+mobile_app_key
+app_store_key
+play_store_key
+
+# ============= CI/CD SECRETS =============
+travis_token
+circle_token
+jenkins_password
+bamboo_password
+teamcity_password
+gitlab_runner_token
+drone_token
+buildkite_token
+codeship_password
+
+# ============= INFRASTRUCTURE =============
+ansible_password
+terraform_token
+puppet_token
+chef_key
+vagrant_key
+kubernetes_token
+docker_registry_password
+npm_token
+pypi_password
+rubygems_key
+packagist_token
+
+# ============= BACKUP FILES =============
+extension:bak
+extension:backup
+extension:old
+extension:tmp
+extension:log
+extension:dump
+filename:backup
+filename:dump
+.backup
+.bak
+.old
+.orig
+.save
+.swp
+~
+
+# ============= TEST AND EXAMPLE EXCLUSION =============
+# Add these as negative patterns in queries:
+# -fake -example -test -XXXX -1234 -ABCD -dummy -sample

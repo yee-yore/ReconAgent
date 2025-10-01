@@ -1,0 +1,49 @@
+services:
+  reconagent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      x-bake:
+        cache-from:
+          - type=local,src=/tmp/.buildx-cache
+        cache-to:
+          - type=local,dest=/tmp/.buildx-cache
+    volumes:
+      - ./results:/app/results
+      - ./.env:/app/.env
+    env_file:
+      - .env
+    environment:
+      - API_BASE=http://web-check:3000
+      - DOCKER_BUILDKIT=1
+    networks:
+      - recon-network
+    depends_on:
+      - web-check
+
+  web-check:
+    image: lissy93/web-check:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - recon-network
+    environment:
+      - WEB_CHECK_DISABLE_GUI=false
+      - WEB_CHECK_API_TIMEOUT=60000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  recon-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  results:
+    driver: local

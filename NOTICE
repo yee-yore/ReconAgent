@@ -1,0 +1,53 @@
+ReconAgent
+Copyright 2025
+
+This product includes software developed by third parties:
+
+================================================================================
+Apache License 2.0 Dependencies
+================================================================================
+
+uro
+Copyright (c) s0md3v
+Licensed under the Apache License, Version 2.0
+https://github.com/s0md3v/uro
+
+Playwright
+Copyright (c) Microsoft Corporation
+Licensed under the Apache License, Version 2.0
+https://github.com/microsoft/playwright
+
+================================================================================
+MIT License Dependencies
+================================================================================
+
+waymore
+Copyright (c) xnl-h4ck3r
+Licensed under the MIT License
+https://github.com/xnl-h4ck3r/waymore
+
+uddup
+Copyright (c) rotemreiss
+Licensed under the MIT License
+https://github.com/rotemreiss/uddup
+
+Nuclei
+Copyright (c) ProjectDiscovery
+Licensed under the MIT License
+https://github.com/projectdiscovery/nuclei
+
+OWASP Noir
+Copyright (c) OWASP Foundation
+Licensed under the MIT License
+https://github.com/owasp-noir/noir
+Docker image: ghcr.io/owasp-noir/noir
+
+Web-Check
+Copyright (c) Lissy93
+Licensed under the MIT License
+https://github.com/Lissy93/web-check
+
+CrewAI
+Copyright (c) crewAIInc
+Licensed under the MIT License
+https://github.com/crewAIInc/crewAI

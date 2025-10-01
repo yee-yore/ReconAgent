@@ -1,0 +1,6 @@
+crewai
+crewai-tools
+requests
+jsbeautifier
+playwright
+tldextract

@@ -9,20 +9,25 @@ from typing import List, Optional, Literal, Dict, Any, Union
 from pydantic import BaseModel, Field
 
 
-class UE_Format(BaseModel):
+class UE_Item(BaseModel):
     line_no: int = Field(description="Line number in source data")
     url: str = Field(description="Target URL with potential vulnerability")
-    category: Literal[
+    category: List[Literal[
         "open_redirect", "idor_potential", "info_disclosure", "auth_bypass",
         "api_exposure", "admin_access", "file_exposure", "debug_mode",
-        "config_leak", "ssrf_potential", "parameter_pollution", "misc"
-    ] = Field(description="Vulnerability category classification")
+        "config_leak", "ssrf_potential", "ssrf", "parameter_pollution", "sqli", "xss", "lfi", "rfi", "rce", "idor", "auth", "misc"
+    ]] = Field(description="Vulnerability category classifications")
     evidence: str = Field(description="Detailed vulnerability description")
     payload_example: str = Field(description="Concrete exploitation payload")
     exploitation_notes: str = Field(description="Step-by-step testing methodology")
     severity: Literal["critical", "high", "medium", "low", "info"] = Field(description="Risk severity level")
     params: List[str] = Field(description="URL parameters involved", default_factory=list)
     endpoint_type: Literal["admin", "api", "auth", "file", "debug", "public", "unknown"] = Field(description="Endpoint classification")
+
+
+class UE_Format(BaseModel):
+    """Wrapper for URL Enumeration analysis results"""
+    findings: List[UE_Item] = Field(description="List of URL analysis findings")
 
 class GD_SearchResult(BaseModel):
     google_dork: str = Field(description="Google Dork query used")

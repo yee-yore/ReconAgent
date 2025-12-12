@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from crewai.tools import BaseTool
-import os, re, subprocess
+import os, re, subprocess, json
 from typing import Set, Optional, List, Dict
 from urllib.parse import urlparse, parse_qs
 
@@ -26,10 +26,79 @@ INVALID_PARAM_CHARS = {'http', 'https', '/', '\\', ' '}
 INVALID_PARAM_PREFIXES = ('amp;', 'nbsp;', 'gt;', 'lt;')
 
 JUICY_WORDS = {
+    # Authentication & Authorization
     'auth', 'login', 'logout', 'signup', 'signin', 'register',
     'user', 'admin', 'passwd', 'password', 'reset', 'token',
-    'session', 'id', 'email'
+    'session', 'id', 'email', 'oauth', 'sso', 'saml', 'jwt',
+    # API & Keys
+    'api', 'key', 'secret', 'private', 'apikey', 'access_token',
+    # Sensitive Operations
+    'internal', 'debug', 'test', 'dev', 'staging', 'beta',
+    'config', 'setting', 'backup', 'dump', 'export', 'download', 'upload',
+    # File & Path
+    'file', 'path', 'doc', 'document', 'folder', 'directory',
+    # Redirect & Navigation
+    'redirect', 'callback', 'return', 'next', 'goto', 'url', 'uri', 'dest',
+    # Data Operations
+    'query', 'search', 'delete', 'remove', 'edit', 'update', 'create', 'modify',
+    # Payment & Financial
+    'payment', 'invoice', 'order', 'cart', 'checkout', 'billing', 'account'
 }
+
+VULN_PARAM_PATTERNS = {
+    'open_redirect': [
+        'url', 'redirect', 'return', 'next', 'goto', 'dest', 'rurl',
+        'target', 'link', 'continue', 'forward', 'callback', 'ret',
+        'returnurl', 'return_url', 'redirect_uri', 'redirect_url',
+        'redir', 'destination', 'out', 'view', 'ref', 'to'
+    ],
+    'ssrf': [
+        'url', 'uri', 'host', 'domain', 'dest', 'site', 'server',
+        'fetch', 'proxy', 'request', 'load', 'img', 'image', 'src',
+        'href', 'path', 'endpoint', 'api', 'webhook'
+    ],
+    'lfi': [
+        'file', 'path', 'page', 'doc', 'folder', 'template', 'include',
+        'dir', 'document', 'root', 'pg', 'style', 'pdf', 'view',
+        'content', 'layout', 'mod', 'conf', 'lang', 'locale'
+    ],
+    'sqli': [
+        'id', 'user_id', 'item', 'no', 'num', 'order', 'sort', 'column',
+        'table', 'field', 'select', 'where', 'cat', 'category', 'type',
+        'filter', 'limit', 'offset', 'group', 'by', 'asc', 'desc'
+    ],
+    'idor': [
+        'id', 'uid', 'pid', 'user_id', 'account', 'doc_id', 'file_id',
+        'order_id', 'invoice', 'report', 'profile', 'account_id',
+        'customer_id', 'user', 'userid', 'member', 'member_id'
+    ],
+    'xss': [
+        'q', 'query', 'search', 'keyword', 's', 'term', 'message',
+        'comment', 'text', 'input', 'name', 'title', 'content', 'callback',
+        'body', 'data', 'value', 'html', 'error', 'msg', 'description'
+    ],
+    'auth': [
+        'token', 'auth', 'key', 'api_key', 'apikey', 'access_token',
+        'session', 'jwt', 'bearer', 'secret', 'password', 'passwd',
+        'credential', 'hash', 'sig', 'signature', 'nonce'
+    ]
+}
+
+def classify_param_vulnerability(param: str) -> List[str]:
+    """Classify parameter by potential vulnerability types based on name patterns."""
+    param_lower = param.lower().strip()
+    if not param_lower:
+        return []
+
+    vulnerabilities = []
+    for vuln_type, patterns in VULN_PARAM_PATTERNS.items():
+        for pattern in patterns:
+            if pattern == param_lower or pattern in param_lower or param_lower in pattern:
+                if vuln_type not in vulnerabilities:
+                    vulnerabilities.append(vuln_type)
+                break
+
+    return vulnerabilities
 
 def apply_segment_pattern(segment: str) -> str:
     """Apply pattern replacement to a single URL segment."""
@@ -292,9 +361,18 @@ def distill(domain: str, output_root: str):
         write_output(os.path.join(file_dir, filename), urls_with_ext)
 
     write_output(os.path.join(url_dir, "query_urls.txt"), query_patterns)
-    write_output(os.path.join(pattern_dir, "params.txt"), all_params)
     write_output(os.path.join(url_dir, "path_urls.txt"), path_patterns)
     write_output(os.path.join(pattern_dir, "juicy.txt"), juicy_urls)
+
+    # Generate param_hints.json with all parameters and their vulnerability classifications
+    param_hints = {}
+    for param in all_params:
+        vulns = classify_param_vulnerability(param)
+        param_hints[param] = vulns  # Empty list if no vulnerabilities
+
+    param_hints_file = os.path.join(pattern_dir, "param_hints.json")
+    with open(param_hints_file, 'w', encoding='utf-8') as f:
+        json.dump(param_hints, f, indent=2, ensure_ascii=False)
 
     process_urls_txt(url_dir, domain)
 

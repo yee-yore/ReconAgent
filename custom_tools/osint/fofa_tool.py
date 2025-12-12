@@ -24,11 +24,13 @@ class FOFASearchTool(BaseTool):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        api_key = os.getenv('FOFA_API_KEY')
-        if not api_key:
-            raise ValueError("FOFA_API_KEY environment variable is required")
-        
-        object.__setattr__(self, 'api_key', api_key)
+        api_key = os.getenv('FOFA_API_KEY', '')
+
+        # Skip if placeholder or missing
+        if not api_key or self._is_placeholder(api_key):
+            object.__setattr__(self, 'api_key', None)
+        else:
+            object.__setattr__(self, 'api_key', api_key)
         object.__setattr__(self, 'base_url', os.getenv('FOFA_BASE_URL', "https://fofa.info/api/v1"))
         object.__setattr__(self, 'free_account_mode', False)
         
@@ -37,7 +39,13 @@ class FOFASearchTool(BaseTool):
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
         })
         object.__setattr__(self, 'session', session)
-    
+
+    def _is_placeholder(self, value: str) -> bool:
+        """Check if value is a placeholder."""
+        if not value:
+            return True
+        return 'your_' in value.lower() and '_here' in value.lower()
+
     def _encode_query(self, query: str) -> str:
         """Encode query to base64"""
         return base64.b64encode(query.encode('utf-8')).decode('utf-8')

@@ -1,7 +1,7 @@
 # ReconAgent - Automated Security Recon Framework
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-0.1.0--alpha-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/Version-0.1.1--alpha-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/Python-3.11%2B-green.svg" alt="Python">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License">
   <img src="https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker" alt="Docker">

@@ -83,10 +83,19 @@ class ZoomEyeOSINTTool(BaseTool):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        api_key = os.getenv('ZOOMEYE_API_KEY')
-        if not api_key:
-            raise ValueError("ZOOMEYE_API_KEY environment variable is required")
-        self._zm = ZoomEyeSDK(api_key=api_key)
+        api_key = os.getenv('ZOOMEYE_API_KEY', '')
+
+        # Skip if placeholder or missing
+        if not api_key or self._is_placeholder(api_key):
+            self._zm = None
+        else:
+            self._zm = ZoomEyeSDK(api_key=api_key)
+
+    def _is_placeholder(self, value: str) -> bool:
+        """Check if value is a placeholder."""
+        if not value:
+            return True
+        return 'your_' in value.lower() and '_here' in value.lower()
     
     def collect_data(self, domain: str, max_pages: int = 5) -> Dict[str, Any]:
         """Collect domain-related data - comprehensive collection for bug hunting/penetration testing"""
@@ -133,9 +142,7 @@ class ZoomEyeOSINTTool(BaseTool):
                         break
                     
                     query_results.extend(data)
-                    
-                    # time.sleep(1)
-                    
+
                     if len(data) < 50:
                         break
                 

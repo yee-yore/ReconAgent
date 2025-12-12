@@ -32,6 +32,14 @@ FROM python:3.11-slim
 RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
+    gcc \
+    g++ \
+    make \
+    swig \
+    python3-dev \
+    libffi-dev \
+    libmupdf-dev \
+    mupdf-tools \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

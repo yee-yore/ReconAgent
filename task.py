@@ -14,6 +14,7 @@ from crewai_tools import DirectoryReadTool, FileReadTool, SerperDevTool, ScrapeW
 
 from custom_tools.url_enum.fetcher_tool import URLFetcherTool
 from custom_tools.url_enum.distiller_tool import URLDistillerTool
+from custom_tools.url_enum.validator_tool import URLValidatorTool
 from custom_tools.google_dork.file_fetch_tool import FileFetchTool
 from custom_tools.github_dork.github_tool import GitHubDorkingTool
 from custom_tools.js_analysis.js_collector_tool import JavaScriptCollectorTool
@@ -54,10 +55,28 @@ UE_distill_urls = Task(
     context=[UE_fetch_urls]
 )
 
+# Optional: URL validation task (can be skipped with --skip-validation)
+UE_validate_urls = Task(
+    name="validate_urls",
+    agent=phase1_url_analyst,
+    description=f"""[1-3] Validate collected URLs for {TARGET} using URLValidatorTool.
+
+        This task checks which URLs are currently alive by sending HTTP requests.
+        Only URLs with 2xx/3xx status codes will be included in alive_urls.txt.
+
+        Output files:
+        • alive_urls.txt - URLs that responded with success status
+        • validated_urls.json - Detailed validation results with status codes
+    """,
+    expected_output="URL validation statistics (total, alive, dead counts)",
+    tools=[URLValidatorTool()],
+    context=[UE_distill_urls]
+)
+
 UE_analysis = Task(
     name="scan_urls",
     agent=phase1_url_analyst,
-    description=f"""[1-3] Analyze collected general URLs from urls.txt and identify ALL potential attack vectors.
+    description=f"""[1-4] Analyze collected URLs and identify ALL potential attack vectors.
 
         Analysis items:
         • ADMINISTRATIVE & DEBUG ENDPOINTS: Admin interfaces, Debug endpoints, Monitoring, Documentation
@@ -68,31 +87,45 @@ UE_analysis = Task(
         • WELL-KNOWN & DISCOVERY: Security info, OpenID, Metadata
         • FILE EXTENSIONS & TECHNOLOGY: Database, Config, Source code, Archives
 
-        Use FileReadTool to analyze the attack vectors:
+        Use FileReadTool to analyze the alive URLs:
         {{
-            "file_path": "results/{TARGET}/phase1/url/urls.txt",
+            "file_path": "results/{TARGET}/phase1/url/alive_urls.txt",
             "start_line": 1,
             "line_count": null
         }}
 
+        Additionally, read parameter vulnerability hints for prioritized analysis:
+        {{
+            "file_path": "results/{TARGET}/phase1/pattern/param_hints.json"
+        }}
+
+        Use param_hints.json to identify high-risk parameters:
+        • open_redirect: Parameters that may allow URL redirection attacks
+        • ssrf: Parameters that may enable server-side request forgery
+        • lfi: Parameters that may allow local file inclusion
+        • sqli: Parameters that may be vulnerable to SQL injection
+        • idor: Parameters that may enable insecure direct object references
+        • xss: Parameters that may allow cross-site scripting
+        • auth: Parameters related to authentication/authorization
+
     """,
-    expected_output="A JSON object with 'line_no', 'url', 'category', 'evidence', 'payload_example', 'exploitation_notes', 'potential_impact', 'severity', 'params', and 'endpoint_type' fields.",
-    tools=[FileReadTool(file_path=f"{RESULT_DIR}/phase1/url/urls.txt")],
-    context=[UE_distill_urls],
+    expected_output="A JSON object with 'findings' array containing objects with 'line_no', 'url', 'category' (array of vulnerability types), 'evidence', 'payload_example', 'exploitation_notes', 'severity', 'params', and 'endpoint_type' fields.",
+    tools=[FileReadTool(file_path=f"{RESULT_DIR}/phase1/url/alive_urls.txt"), FileReadTool(file_path=f"{RESULT_DIR}/phase1/pattern/param_hints.json")],
+    context=[UE_validate_urls],
     output_json=UE_Format,
 )
 
 UE_result = Task(
     name="save_attack_vectors",
     agent=phase1_url_analyst,
-    description=f"""[1-4] Save URL Enumeration analysis results for {TARGET} as structured attack vectors in JSON
+    description=f"""[1-5] Save URL Enumeration analysis results for {TARGET} as structured attack vectors in JSON
 
         Use FileWriterTool to save the attack vectors:
         {{
           "filename": "p1_attack_vector.json"
           "directory": "{RESULT_DIR}/phase1"
         }}
-        
+
         """,
     expected_output="Attack vectors saved successfully",
     tools=[FileWriterTool()],

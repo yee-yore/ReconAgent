@@ -18,6 +18,17 @@ REQUIRED_API_KEYS = [
     'GITHUB_API_TOKEN'
 ]
 
+# Phase-specific API key requirements
+PHASE_API_KEYS = {
+    'url-enum': ['OPENAI_API_KEY'],
+    'google-dork': ['OPENAI_API_KEY', 'SERPER_API_KEY'],
+    'github-dork': ['OPENAI_API_KEY', 'GITHUB_API_TOKEN'],
+    'js-analysis': ['OPENAI_API_KEY'],
+    'threat-intel': ['OPENAI_API_KEY'],
+    'infra': ['OPENAI_API_KEY', 'API_BASE'],
+    'osint': ['OPENAI_API_KEY', 'ZOOMEYE_API_KEY', 'URLSCAN_API_KEY', 'FOFA_API_KEY'],
+}
+
 PHASE_DEPENDENCIES = {
     'url-enum': ['waymore', 'uro', 'uddup'],
     'js-analysis': ['nuclei', 'noir'],
@@ -27,8 +38,8 @@ PHASE_DEPENDENCIES = {
 PHASES = {
     'url-enum': {
         'name': 'URL Enumeration & Classification',
-        'description': 'Collect URLs, distill and analyze for attack vectors',
-        'tasks': ['UE_fetch_urls', 'UE_distill_urls', 'UE_analysis', 'UE_result'],
+        'description': 'Collect URLs, distill, validate and analyze for attack vectors',
+        'tasks': ['UE_fetch_urls', 'UE_distill_urls', 'UE_validate_urls', 'UE_analysis', 'UE_result'],
         'dependencies': []
     },
     'google-dork': {
@@ -78,12 +89,18 @@ def load_env_config():
     load_dotenv()
     return {key: os.getenv(key, '') for key in REQUIRED_API_KEYS + ['TARGET', 'RESULT_DIR']}
 
-def validate_api_keys(config):
-    """Validate required API keys are present and non-empty."""
+def validate_api_keys(config, phase=None):
+    """Validate required API keys for the specified phase."""
+    # Determine which keys are required for this phase
+    if phase and phase in PHASE_API_KEYS:
+        required_keys = PHASE_API_KEYS[phase]
+    else:
+        required_keys = ['OPENAI_API_KEY']  # Default: only OpenAI key required
+
     missing_keys = []
     placeholder_keys = []
 
-    for key in REQUIRED_API_KEYS:
+    for key in required_keys:
         value = config.get(key, '')
         if not value:
             missing_keys.append(key)
@@ -290,6 +307,12 @@ Examples:
         help='Generate HTML report after phase execution or from existing results. Optional: specify custom output path'
     )
 
+    parser.add_argument(
+        '--skip-validation',
+        action='store_true',
+        help='Skip URL validation step in url-enum phase (faster but includes dead URLs)'
+    )
+
     return parser
 
 def generate_report_for_target(target, output_path=None):
@@ -329,10 +352,10 @@ def resolve_dependencies(requested_phases):
         
     return execution_order
 
-def get_phase_tasks(phases):
+def get_phase_tasks(phases, skip_validation=False):
     """Get all task objects for the specified phases."""
     from task import (
-        UE_fetch_urls, UE_distill_urls, UE_analysis, UE_result,
+        UE_fetch_urls, UE_distill_urls, UE_validate_urls, UE_analysis, UE_result,
         GD_dorking, GD_url_analysis, GD_file_download, GD_file_analysis, GD_result,
         GH_dorking, GH_analysis, GH_result,
         JA_collect, JA_nuclei_scan, JA_noir_scan, JA_analysis, JA_result,
@@ -340,10 +363,11 @@ def get_phase_tasks(phases):
         WC_fingerprint, WC_analysis, WC_result,
         OT_zoomeye, OT_urlscan, OT_fofa, OT_analysis, OT_result
     )
-    
+
     task_map = {
         'UE_fetch_urls': UE_fetch_urls,
         'UE_distill_urls': UE_distill_urls,
+        'UE_validate_urls': UE_validate_urls,
         'UE_analysis': UE_analysis,
         'UE_result': UE_result,
         'GD_dorking': GD_dorking,
@@ -377,12 +401,15 @@ def get_phase_tasks(phases):
     tasks = []
     for phase in phases:
         for task_name in PHASES[phase]['tasks']:
+            # Skip validation task if --skip-validation flag is set
+            if skip_validation and task_name == 'UE_validate_urls':
+                continue
             if task_name in task_map:
                 tasks.append(task_map[task_name])
-            
+
     return tasks
 
-def create_crew_for_phases(phases):
+def create_crew_for_phases(phases, target, skip_validation=False):
     """Create CrewAI crew for specified phases."""
     from agent import (
         phase1_url_analyst,
@@ -393,8 +420,8 @@ def create_crew_for_phases(phases):
         phase6_infrastructure_analyst,
         phase7_osint_integrator
     )
-    
-    tasks = get_phase_tasks(phases)
+
+    tasks = get_phase_tasks(phases, skip_validation=skip_validation)
 
     crew_config = {
         "agents": [
@@ -408,15 +435,18 @@ def create_crew_for_phases(phases):
         ],
         "tasks": tasks,
         "verbose": True,
+        "output_log_file": f"results/{target}/crew_logs.txt",
         "memory": False,
     }
     
     return Crew(**crew_config)
 
-def execute_phases(phases, target):
+def execute_phases(phases, target, skip_validation=False):
     """Execute the specified reconnaissance phases."""
     print(f"[*] Starting reconnaissance for target: {target}")
     print(f"[*] Phases to execute: {', '.join(phases)}")
+    if skip_validation and 'url-enum' in phases:
+        print(f"[*] URL validation step will be skipped (--skip-validation)")
 
     execution_phases = resolve_dependencies(phases)
     result_dir = f"results/{target}"
@@ -433,7 +463,7 @@ def execute_phases(phases, target):
 
     try:
         print("[*] Initializing AI agents and tasks...")
-        crew = create_crew_for_phases(execution_phases)
+        crew = create_crew_for_phases(execution_phases, target, skip_validation=skip_validation)
         print("[*] Starting reconnaissance execution...")
         crew.kickoff()
 
@@ -445,7 +475,9 @@ def execute_phases(phases, target):
         return False
 
     except Exception as e:
+        import traceback
         print(f"[-] Error during execution: {str(e)}")
+        print(f"[-] Full traceback:\n{traceback.format_exc()}")
         return False
 
 def main():
@@ -463,8 +495,8 @@ def main():
         print("[-] Error: Failed to load configuration from .env")
         return 1
 
-    if not validate_api_keys(config):
-        print("[-] Error: API key validation failed - check OPENAI_API_KEY in .env")
+    if not validate_api_keys(config, args.phase):
+        print(f"[-] Error: API key validation failed for phase '{args.phase}'")
         return 1
 
     if not args.target:
@@ -505,7 +537,8 @@ def main():
 
     success = execute_phases(
         phases=phases,
-        target=args.target
+        target=args.target,
+        skip_validation=args.skip_validation
     )
 
     if args.report is not None:

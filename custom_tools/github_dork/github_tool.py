@@ -68,11 +68,11 @@ class GitHubDorkingTool(BaseTool):
         multiple_tokens = os.getenv("GITHUB_API_TOKENS", "").split(',')
 
         if single_token and ',' in single_token:
-            self.api_tokens = [t.strip() for t in single_token.split(',') if t.strip()]
-        elif single_token:
+            self.api_tokens = [t.strip() for t in single_token.split(',') if t.strip() and not self._is_placeholder(t.strip())]
+        elif single_token and not self._is_placeholder(single_token):
             self.api_tokens = [single_token]
         elif multiple_tokens and multiple_tokens[0]:
-            self.api_tokens = [t.strip() for t in multiple_tokens if t.strip()]
+            self.api_tokens = [t.strip() for t in multiple_tokens if t.strip() and not self._is_placeholder(t.strip())]
         else:
             self.api_tokens = []
 
@@ -91,6 +91,12 @@ class GitHubDorkingTool(BaseTool):
                 "Accept": "application/vnd.github.v3+json",
                 "User-Agent": os.getenv("GITHUB_USER_AGENT", "ReconAgent-Security-Research/1.0")
             })
+
+    def _is_placeholder(self, value: str) -> bool:
+        """Check if value is a placeholder."""
+        if not value:
+            return True
+        return 'your_' in value.lower() and '_here' in value.lower()
 
     def setup_session_with_token(self, token: str):
         """Setup session headers with the given token."""

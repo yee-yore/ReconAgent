@@ -26,18 +26,31 @@ class URLScanTool(BaseTool):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        object.__setattr__(self, 'api_key', os.getenv('URLSCAN_API_KEY'))
+        api_key = os.getenv('URLSCAN_API_KEY', '')
+
+        # Skip if placeholder or missing
+        if not api_key or self._is_placeholder(api_key):
+            object.__setattr__(self, 'api_key', None)
+        else:
+            object.__setattr__(self, 'api_key', api_key)
+
         object.__setattr__(self, 'base_url', "https://urlscan.io/api/v1")
-        
+
         session = requests.Session()
         session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
         })
-        
+
         if self.api_key:
             session.headers['API-Key'] = self.api_key
-            
+
         object.__setattr__(self, 'session', session)
+
+    def _is_placeholder(self, value: str) -> bool:
+        """Check if value is a placeholder."""
+        if not value:
+            return True
+        return 'your_' in value.lower() and '_here' in value.lower()
     
     def _make_request(self, endpoint: str, method: str = 'GET', 
                      params: Optional[Dict] = None, json_data: Optional[Dict] = None) -> Optional[Dict]:

@@ -84,6 +84,19 @@ VULN_PARAM_PATTERNS = {
     ]
 }
 
+def is_noise_param(param: str) -> bool:
+    """Filter out noise parameters that have no security testing value."""
+    # Pure numeric (timestamps, dates, indices)
+    if param.isdigit():
+        return True
+    # Version/cache busters: _v1234567890, v1, v2
+    if re.match(r'^_?v\d+$', param):
+        return True
+    # Encoded/corrupted params (URL encoded or excessively long)
+    if '%' in param or len(param) > 50:
+        return True
+    return False
+
 def classify_param_vulnerability(param: str) -> List[str]:
     """Classify parameter by potential vulnerability types based on name patterns."""
     param_lower = param.lower().strip()
@@ -367,6 +380,8 @@ def distill(domain: str, output_root: str):
     # Generate param_hints.json with all parameters and their vulnerability classifications
     param_hints = {}
     for param in all_params:
+        if is_noise_param(param):
+            continue
         vulns = classify_param_vulnerability(param)
         param_hints[param] = vulns  # Empty list if no vulnerabilities
 

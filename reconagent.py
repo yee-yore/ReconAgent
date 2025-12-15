@@ -160,6 +160,11 @@ def validate_domain(domain):
     )
     return pattern.match(domain) is not None
 
+def load_domains_from_file(filepath):
+    """Load domains from file (one per line, # comments ignored)."""
+    with open(filepath, 'r') as f:
+        return [line.strip() for line in f if line.strip() and not line.startswith('#')]
+
 def check_waymore_installed():
     """Check if waymore is installed."""
     try:
@@ -286,6 +291,12 @@ Examples:
         metavar='',
         help='Target domain for reconnaissance (updates .env automatically)'
     )
+
+    parser.add_argument(
+        '--target-file', '-f',
+        metavar='FILE',
+        help='File containing list of target domains (one per line)'
+    )
     
     phase_group = parser.add_mutually_exclusive_group()
     phase_group.add_argument(
@@ -317,7 +328,7 @@ Examples:
 
 def generate_report_for_target(target, output_path=None):
     """Generate security report for target."""
-    from generate_report import SecurityReportGenerator
+    from src.report import SecurityReportGenerator
 
     results_dir = f"results/{target}"
     if os.path.exists(results_dir):
@@ -354,7 +365,7 @@ def resolve_dependencies(requested_phases):
 
 def get_phase_tasks(phases, skip_validation=False):
     """Get all task objects for the specified phases."""
-    from task import (
+    from src.task import (
         UE_fetch_urls, UE_distill_urls, UE_validate_urls, UE_analysis, UE_result,
         GD_dorking, GD_url_analysis, GD_file_download, GD_file_analysis, GD_result,
         GH_dorking, GH_analysis, GH_result,
@@ -411,7 +422,7 @@ def get_phase_tasks(phases, skip_validation=False):
 
 def create_crew_for_phases(phases, target, skip_validation=False):
     """Create CrewAI crew for specified phases."""
-    from agent import (
+    from src.agent import (
         phase1_url_analyst,
         phase2_dorking_specialist,
         phase3_github_researcher,
@@ -499,25 +510,17 @@ def main():
         print(f"[-] Error: API key validation failed for phase '{args.phase}'")
         return 1
 
-    if not args.target:
-        print("[-] Error: Target domain not specified - use --target <domain>")
+    # Determine target(s)
+    if args.target_file:
+        domains = load_domains_from_file(args.target_file)
+        print(f"[*] Loaded {len(domains)} domains from {args.target_file}")
+    elif args.target:
+        domains = [args.target]
+    else:
+        print("[-] Error: Target not specified - use --target <domain> or --target-file <file>")
         return 1
 
-    if not validate_domain(args.target):
-        print(f"[-] Error: Invalid domain format: {args.target}")
-        return 1
-
-    if not update_env_target(args.target):
-        print(f"[-] Error: Failed to update .env with target {args.target}")
-        return 1
-    
-    load_dotenv(override=True)
-    
-    if args.report is not None and not args.all and not args.phase:
-        output_path = args.report if args.report else None
-        success = generate_report_for_target(args.target, output_path)
-        return 0 if success else 1
-
+    # Determine phases
     if args.all:
         phases = list(PHASES.keys())
     elif args.phase:
@@ -531,21 +534,40 @@ def main():
             print(f"[-] Error: Invalid phase(s): {', '.join(invalid)}")
             print(f"Valid phases: {', '.join(PHASES.keys())}")
             return 1
+    elif args.report is not None:
+        # Report-only mode
+        for domain in domains:
+            output_path = args.report if args.report else None
+            generate_report_for_target(domain, output_path)
+        return 0
     else:
         print("[-] Error: No phase specified - use --phase <phase> or --all")
         return 1
 
-    success = execute_phases(
-        phases=phases,
-        target=args.target,
-        skip_validation=args.skip_validation
-    )
+    # Execute phases for each domain
+    for i, domain in enumerate(domains, 1):
+        if len(domains) > 1:
+            print(f"\n{'='*60}")
+            print(f"[*] Processing domain {i}/{len(domains)}: {domain}")
+            print(f"{'='*60}")
 
-    if args.report is not None:
-        output_path = args.report if args.report else None
-        generate_report_for_target(args.target, output_path)
+        update_env_target(domain)
+        load_dotenv(override=True)
 
-    return 0 if success else 1
+        success = execute_phases(
+            phases=phases,
+            target=domain,
+            skip_validation=args.skip_validation
+        )
+
+        if args.report is not None:
+            output_path = args.report if args.report else None
+            generate_report_for_target(domain, output_path)
+
+    if len(domains) > 1:
+        print(f"\n[+] Completed processing {len(domains)} domains")
+
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main())

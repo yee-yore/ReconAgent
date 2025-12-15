@@ -25,7 +25,7 @@ from custom_tools.osint.zoomeye_tool import ZoomEyeOSINTTool
 from custom_tools.osint.urlscan_tool import URLScanTool
 from custom_tools.osint.fofa_tool import FOFASearchTool
 
-from agent import phase1_url_analyst, phase2_dorking_specialist, phase3_github_researcher, phase4_javascript_auditor, phase5_threat_researcher, phase6_infrastructure_analyst, phase7_osint_integrator
+from src.agent import phase1_url_analyst, phase2_dorking_specialist, phase3_github_researcher, phase4_javascript_auditor, phase5_threat_researcher, phase6_infrastructure_analyst, phase7_osint_integrator
 
 today = datetime.now(timezone.utc)
 
@@ -36,7 +36,7 @@ ROOT_TARGET = f"{extracted.domain}.{extracted.suffix}"
 
 RESULT_DIR = os.getenv("RESULT_DIR") or f"results/{TARGET}"
 
-from models import UE_Format, GD_SearchResult, GD_URLAnalysis, GH_SearchResult, GH_Format, JA_Format, TI_Format, TI_Incident_Format, TI_Vulnerability_Format, TI_NewFeature_Format, WC_Format, OT_Format
+from src.models import UE_Format, GD_SearchResult, GD_URLAnalysis, GH_SearchResult, GH_Format, JA_Format, TI_Format, TI_Incident_Format, TI_Vulnerability_Format, TI_NewFeature_Format, WC_Format, OT_Format
 
 UE_fetch_urls = Task(
     name="fetch_urls",

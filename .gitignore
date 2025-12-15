@@ -51,3 +51,8 @@ crew_output.log.txt
 *.tmp
 *.temp
 .cache/
+
+# WIP (temporary)
+visualizer/
+.playwright-mcp/
+.serena/
